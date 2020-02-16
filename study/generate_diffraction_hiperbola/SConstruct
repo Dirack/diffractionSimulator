@@ -33,7 +33,7 @@ Flow("spike",None,
 
 Flow("simulatedZeroOffset","spike",
 	"""
-	ricker1 frequency=5
+	ricker1 frequency=10
 	""")
 	
 Plot("simulatedZeroOffset",
@@ -41,7 +41,8 @@ Plot("simulatedZeroOffset",
 	grey title="Simulated zero offset section"
 	""")
 
-# Generate a diffraction hiperbola with a set of spikes
+# Generate a diffraction hiperbola with a convolution
+# between a set of spikes with a ricker pulse
 t0 = 1
 v = 1.5
 td = []
@@ -73,6 +74,17 @@ Flow("hiperbola","spike2",
 	""")
 
 Plot("hiperbola",
+	"""
+	grey title="Diffraction hiperbola"
+	""")
+
+# Add reflection and diffraction hiperbola
+Flow("diffResponse","simulatedZeroOffset hiperbola",
+	"""
+	add ${SOURCES[1]} scale=1,1
+	""")
+
+Plot("diffResponse",
 	"""
 	grey title="Simulated diffraction response"
 	""")
