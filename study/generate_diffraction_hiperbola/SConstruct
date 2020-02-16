@@ -43,20 +43,19 @@ Plot("simulatedZeroOffset",
 
 # Generate a diffraction hiperbola with a set of spikes
 t0 = 1
-v = 3
+v = 1.5
 td = []
 dt = 0.004
 dx = 0.0125
-x0 = 2
+x0 = 3
 xd = []
 
-for i in range(100):
+for i in range(200):
 	
-	x = x0 + dx*i
+	x = x0 + dx*(i-100)
 
 	xd.append(round(x/dx))
-
-	td.append(round((t0*t0 + (x*x)/(v*v))/dt))
+	td.append(round((t0*t0 + ((x-x0)*(x-x0))/(v*v))/dt))
 
 Flow("spike2",None,
 	"""
@@ -70,7 +69,7 @@ Plot("spike2",
 
 Flow("hiperbola","spike2",
 	"""
-	ricker1 frequency=5
+	ricker1 frequency=10
 	""")
 
 Plot("hiperbola",
