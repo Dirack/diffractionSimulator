@@ -1,0 +1,29 @@
+# coding: utf-8
+#
+# SConstruct (Madagascar script)
+# 
+# Purpose: Simulate a diffraction hiperbola.
+# 
+# Site: http://www.dirackslounge.online
+# 
+# Version 1.0
+# 
+# Programer: Rodolfo Dirack 15/02/2020
+# 
+# Email: rodolfo_profissional@hotmail.com
+# 
+# License: GPL-3.0 <https://www.gnu.org/licenses/gpl-3.0.txt>.
+
+from rsf.proj import *
+
+import math
+
+Flow("spike",None,
+	"""
+	spike n1=1000 n2=1000 d1=0.004 d2=0.0125 o1=0 o2=0
+	""")
+
+Flow("hiperbola","spike"
+	"""
+	math output=""
+	""")
