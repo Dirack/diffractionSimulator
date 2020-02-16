@@ -18,6 +18,12 @@ from rsf.proj import *
 
 import math
 
+# Return a list of spike positions in a
+# string format suitable for sfspike
+def formatListSpikes(lst):
+	
+	return str(lst).strip('[]').replace(' ','')
+
 # Generate a simulated zero offset section making a convolution of a line
 # of spikes with a ricker pulse
 Flow("spike",None,
@@ -34,3 +40,42 @@ Plot("simulatedZeroOffset",
 	"""
 	grey title="Simulated zero offset section"
 	""")
+
+# Generate a diffraction hiperbola with a set of spikes
+t0 = 1
+v = 3
+td = []
+dt = 0.004
+dx = 0.0125
+x0 = 2
+xd = []
+
+for i in range(100):
+	
+	x = x0 + dx*i
+
+	xd.append(round(x/dx))
+
+	td.append(round((t0*t0 + (x*x)/(v*v))/dt))
+
+Flow("spike2",None,
+	"""
+	spike n1=1000 n2=1000 d1=0.004 d2=0.0125 o1=0 o2=0 k1=%s k2=%s nsp=%d
+	""" % (formatListSpikes(td),formatListSpikes(xd),i))
+
+Plot("spike2",
+	"""
+	grey title="spikes" 
+	""")
+
+Flow("hiperbola","spike2",
+	"""
+	ricker1 frequency=5
+	""")
+
+Plot("hiperbola",
+	"""
+	grey title="Simulated diffraction response"
+	""")
+
+End()
