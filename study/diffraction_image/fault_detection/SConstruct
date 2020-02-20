@@ -1,16 +1,18 @@
-# SConstruct (Python)
+# coding: utf-8
+#
+# SConstruct (Madagascar script)
 # 
-# Objetivo:
+# Purpose: Diffraction imaging by focusing.
 # 
-# Versão
+# Site: http://www.dirackslounge.online
 # 
-# Site:
+# Version 1.0
 # 
-# Programador: 20/02/2020
+# Programer: Rodolfo Dirack 20/02/2020
 # 
-# Email:
+# Email: rodolfo_profissional@hotmail.com
 # 
-# Licença:
+# License: GPL-3.0 <https://www.gnu.org/licenses/gpl-3.0.txt>.
 
 from rsf.proj import *
 import rsf.recipes.stack as stack
