@@ -111,4 +111,11 @@ Flow("slope","diffResponse",
 	dip rect1=1 rect2=3
 	''')
 
+# Measure focusing in only hiperbola data
+Flow("focusMeasure","hiperbola",
+	'''
+	focus rect1=1 rect2=3 |
+	math output="1/abs(input)"
+	''')
+
 End()
