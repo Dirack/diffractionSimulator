@@ -118,4 +118,21 @@ Flow("focusMeasure","hiperbola",
 	math output="1/abs(input)"
 	''')
 
+velcon='''
+cosft sign2=1 | put o3=0 |
+stolt vel=1.5 | vczo nv=100 dv=0.1 v0=1.5 |
+transp plane=23 |
+cosft sign2=-1 |
+window n2=200 f1=0
+put o2=0 |
+transp plane=23
+'''
+
+Flow("velocity","hiperbola",velcon)
+
+Flow("velocityq","hiperbola",
+	'''
+	math output="input*input" | %s | clip2 lower=0
+	''' % velcon)
+
 End()
