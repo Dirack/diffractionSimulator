@@ -135,4 +135,17 @@ Flow("velocityq","hiperbola",
 	math output="input*input" | %s | clip2 lower=0
 	''' % velcon)
 
+Flow("semblance",["velocity","velocityq"],
+	'''
+	mul $SOURCE |
+	divn den=${SOURCES[1]} rect1=10 rect3=10
+	''')
+
+Flow("pick","semblance",
+	'''
+	scale axis=2 | 
+	pick an=1 rect1=10 rect2=10 | 
+	window
+	''')
+
 End()
