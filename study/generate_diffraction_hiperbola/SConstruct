@@ -15,7 +15,7 @@
 # License: GPL-3.0 <https://www.gnu.org/licenses/gpl-3.0.txt>.
 
 from rsf.proj import *
-
+import rsf.recipes.stack as stack
 import math
 
 # Return a list of spike positions in a
@@ -104,5 +104,11 @@ Plot("diffResponse",
 	"""
 	grey title="Simulated diffraction response"
 	""")
+
+# Get the dominant slope from data
+Flow("slope","diffResponse",
+	'''
+	dip rect1=1 rect2=3
+	''')
 
 End()
