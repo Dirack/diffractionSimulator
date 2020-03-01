@@ -1,0 +1,137 @@
+# coding: utf-8
+#
+# SConstruct (Madagascar script)
+# 
+# Purpose: Simulate and migrate diffraction hiperbolas 
+# in the stacked section.
+# 
+# Site: http://www.dirackslounge.online
+# 
+# Version 1.0
+# 
+# Programer: Rodolfo Dirack 01/03/2020
+# 
+# Email: rodolfo_profissional@hotmail.com
+# 
+# License: GPL-3.0 <https://www.gnu.org/licenses/gpl-3.0.txt>.
+
+from rsf.proj import *
+from diff import diffmig as diff
+import math
+
+# Return a list of spike positions in a
+# string format suitable for sfspike
+def formatListSpikes(lst):
+	
+	return str(lst).strip('[]').replace(' ','')
+
+# Generate a simulated zero offset section making a convolution of a line
+# of spikes with a ricker pulse
+Flow("spike",None,
+	"""
+	spike n1=1000 n2=1000 d1=0.004 d2=0.0125 o1=0 o2=0 k1=250 k2=0 l2=1000 mag=1 nsp=1
+	""")
+
+Flow("simulatedZeroOffset","spike",
+	"""
+	ricker1 frequency=10
+	""")
+	
+Plot("simulatedZeroOffset",
+	"""
+	grey title="Simulated zero offset section"
+	""")
+
+# Generate a diffraction hiperbola with a convolution
+# between a set of spikes with a ricker pulse
+t0 = 1
+v = 1.5
+td = []
+dt = 0.004
+dx = 0.0125
+x0 = 1.5
+xd = []
+
+# Calculate the first hiperbola
+for i in range(200):
+	
+	x = x0 + dx*(i-100)
+
+	xd.append(round(x/dx))
+	td.append(round((t0*t0 + ((x-x0)*(x-x0))/(v*v))/dt))
+
+# shift the hiperbola to form the linearized reflection event
+# the hiperbolas shift sampling is 0.5km = 40 * 0.0125km
+spikeFiles = []
+hiperbolaFiles = []
+for j in range(15):
+
+	hiperbolaSpikes = "hiperbolaSpikes%d" % j
+
+	hiperbolas = "hiperbola%d" % j
+
+	xd = map(lambda l: l + 40,xd) 
+
+	Flow(hiperbolaSpikes,None,
+		"""
+		spike n1=1000 n2=1000 d1=0.004 d2=0.0125 o1=0 o2=0 k1=%s k2=%s nsp=%d
+		""" % (formatListSpikes(td),formatListSpikes(xd),len(xd)))
+
+	Flow(hiperbolas,hiperbolaSpikes,
+		"""
+		ricker1 frequency=10
+		""")
+
+	hiperbolaFiles.append(hiperbolas)
+
+# Add generated hiperbolas in just one section
+Flow("hiperbola", hiperbolaFiles,
+	"""
+	add ${SOURCES[0:%d]} 
+	""" % len(hiperbolaFiles))
+
+Plot("hiperbola",
+	"""
+	grey title="Diffraction hiperbola"
+	""")
+
+# Add reflection and diffraction hiperbolas
+Flow("diffResponse","simulatedZeroOffset hiperbola",
+	"""
+	add ${SOURCES[1]} scale=1,1
+	""")
+
+Plot("diffResponse",
+	"""
+	grey title="Simulated diffraction response"
+	""")
+
+diff("diff",
+	"hiperbola",
+	v0=1.5,
+	nv=200,
+	dv=0.1,
+	nx=1000,
+	padx=1000,
+	nt=1000,
+	tmin=0,
+	tmax=10,
+            rect1=10,
+            rect2=10,
+            srect1=1,
+            srect2=3,
+            vslope=None,
+            units='Km',
+            f1=1,
+            j3=1,
+            dx=1,
+            x0=0,
+            beg1=0,
+            frect1=0,
+            frect2=0,
+            an=1,
+            nout=2048,
+            vx0=None)
+
+
+End()

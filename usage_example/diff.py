@@ -19,6 +19,8 @@ from rsf.proj import *
 import string, sys
 import version
 
+frect=0
+
 def diffmig(name,
             stk,
             v0,
@@ -136,7 +138,7 @@ def diffmig(name,
     else:
         pick = ''
 
-    pick = pick + 'scale axis=2 | pick an=%g rect1=%d rect2=%d | window' % (an.rect1,rect2)
+    pick = pick + 'scale axis=2 | pick an=%g rect1=%d rect2=%d | window' % (an,rect1,rect2)
 
     if j3 > 1:
         pick2 = pick + '''
@@ -152,27 +154,4 @@ def diffmig(name,
 
     slc = name + '-slc' # slice of picking cube
     Flow(slc,[vlf,pik],'slice pick=${SOURCES[1]}')
-    Result(slc,grey('Migrated Diffractions')
-
-
-
-
-            
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    Result(slc,grey('Migrated Diffractions'))
