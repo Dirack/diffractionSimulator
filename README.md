@@ -3,8 +3,9 @@
 
 [Developed to Madagascar package, version 2.0.](http://www.ahay.org/wiki/Main_Page)
 
-This package is a set of Madagascar SConstruct scripts to simulate several diffraction hiperbolas in a Stacked Section
-with a given velocity model. After that simulation, it migrates the diffraction hiperbola, using local varimax focusing
+This package is a set of Madagascar SConstruct scripts to simulate several diffraction hyperbolas in a Stacked Section
+and migrate with a velocity model that produce best focusing of the simulated hyperbolas.
+After that simulation, it migrates the diffraction hyperbola, using local varimax focusing
 measure and velocity continuation to get the migration velocity model and focalize the diffractions.
 
 This script is based on the numerical experiment of the Madagascar reproducible paper
