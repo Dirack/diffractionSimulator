@@ -3,6 +3,8 @@
 
 [Developed to Madagascar package, version 2.0.](http://www.ahay.org/wiki/Main_Page)
 
+![](https://github.com/Dirack/diffractionSimulator/blob/master/images/diffResponse.jpeg)
+
 This package is a set of Madagascar SConstruct scripts to simulate several diffraction hyperbolas in a Stacked Section
 and migrate with a velocity model that produce best focusing of the simulated hyperbolas.
 After that simulation, it migrates the diffraction hyperbola, using local varimax focusing
