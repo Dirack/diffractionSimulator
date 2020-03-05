@@ -6,4 +6,5 @@ copy*
 *.hh
 Fig/
 *.jpeg
+!images/*
 *.pyc
