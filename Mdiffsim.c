@@ -16,9 +16,9 @@ License: GPL-3.0 <https://www.gnu.org/licenses/gpl-3.0.txt>.
 int main(int argc, char* argv[])
 {
 
-	float pm0; // picked m0's in the stacked section
-	float pt0; // picked t0's in the stacked section
-	float v; // picked velocity for m0's and t0's
+	float* pm0; // picked m0's in the stacked section
+	float* pt0; // picked t0's in the stacked section
+	float* v; // picked velocity for m0's and t0's
 	float** stackedSection; // stacked section A(t0,m0)
 	float aperture; // simulated hyperbolas aperture
 	int nt0; // number of t0's in stacked section
@@ -38,15 +38,22 @@ int main(int argc, char* argv[])
 	int it; // time index coordinate of a hyperbola sample
 	int i; // loop counter
 	int j; // loop counter
+	int k; // loop counter
+	int nv; // Number of diffraction hyperbolas velocities
+	int npt0; // Number of picked t0's
+	int npm0; // Number of picked m0's
 
 	/* RSF files I/O */
-	sf_file in, out;
+	sf_file in, out, v_file, pt0_file, pm0_file;
 
 	/* RSF files axis */
 
 	sf_init(argc,argv);
 
 	in = sf_input("in");
+	pt0_file = sf_input("t0");
+	pm0_file = sf_input("m0");
+	v_file = sf_input("v");
 	out = sf_output("out");
 
 	/* Read stacked section geometry */
@@ -56,18 +63,18 @@ int main(int argc, char* argv[])
 	if(!sf_histint(in,"n2",&nm0)) sf_error("No n2= in input");
 	if(!sf_histfloat(in,"d2",&dm0)) sf_error("No d2= in input");
 	if(!sf_histfloat(in,"o2",&om0)) sf_error("No o2= in input");
+
+	/* Read auxiliary files geometry */
+	if(!sf_histint(pt0_file,"n1",&npt0)) sf_error("No n1= in t0's file");
+	if(!sf_histint(pm0_file,"n1",&npm0)) sf_error("No n1= in m0's file");
+	if(!sf_histint(v_file,"n1",&nv)) sf_error("No n1= in v's file");
+	
+	/* Vectors should have the same dimension */
+	if(!(npt0==npm0)) sf_error("Auxiliary files (t0,m0 and v) should have the same n1!");
+	if(!(npm0==nv)) sf_error("Auxiliary files (t0,m0 and v) should have the same n1!");
 	
 	if(!sf_getbool("verb",&verb)) verb=0;
 	/* 1: active mode; 0: quiet mode */
-
-	if(!sf_getfloat("v",&v)) v=1.5;
-	/* Hyperbola velocity (Km/s) */
-
-	if(!sf_getfloat("pm0",&pm0)) pm0=(om0+nm0*dm0)/2;
-	/* picked m0 (Km) */
-
-	if(!sf_getfloat("pt0",&pt0)) pt0=(ot0+nt0*dt0)/2;
-	/* picked t0 (s) */
 
 	if(!sf_getfloat("aperture",&aperture)) aperture=1;
 	/* Diffraction hyperbolas aperture */
@@ -79,30 +86,40 @@ int main(int argc, char* argv[])
 		sf_warning("n2=%d d2=%f o2=%f",nm0,dm0,om0);
 	}
 
+	/* Read input files */
 	stackedSection = sf_floatalloc2(nt0,nm0);
 	sf_floatread(stackedSection[0],nt0*nm0,in);
+	pt0 = sf_floatalloc(npt0);
+	sf_floatread(pt0,npt0,pt0_file);
+	pm0 = sf_floatalloc(npm0);
+	sf_floatread(pm0,npm0,pm0_file);
+	v = sf_floatalloc(nv);
+	sf_floatread(v,nv,v_file);
 
-	/* Calculate center hyperbola coordinates */
-	im0 = round(pm0/dm0);
-	it0 = round(pt0/dt0);
-	m0 = im0*dm0+om0;
-	t0 = it0*dt0+ot0;
 	aperture = aperture;
 	ntraces = round(aperture/dm0);
 
-	for(i=im0-ntraces;i<im0+ntraces;i++){
+	for(k=0;k<nv;k++){
 
-		m = (i*dm0)-m0;
-		t = sqrt(t0*t0 + ((m*m)/(v*v)));
-		it = (int) round(t/dt0);
+		/* Calculate center hyperbola coordinates */
+		im0 = round(pm0[k]/dm0);
+		it0 = round(pt0[k]/dt0);
+		m0 = im0*dm0+om0;
+		t0 = it0*dt0+ot0;
 
-		for(j=-10;j<11;j++){
-			stackedSection[i][it+j] += 1;
-		}/* loop over a time window */
+		for(i=im0-ntraces;i<im0+ntraces;i++){
 
-		sf_warning("(t=%d,m=%d)\n",t,i);
+			m = (i*dm0)-m0;
+			t = sqrt(t0*t0 + ((m*m)/(v[k]*v[k])));
+			it = (int) round(t/dt0);
 
-	} /* loop over diffraction hyperbola */
+			for(j=-10;j<11;j++){
+				stackedSection[i][it+j] += 1;
+			}/* loop over a time window */
+
+		} /* loop over one diffraction hyperbola */
+
+	} /* Loop over hyperbolas */
 
 	sf_floatwrite(stackedSection[0],nt0*nm0,out);
 
