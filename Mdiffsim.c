@@ -1,6 +1,6 @@
 /* Version 1.0 - Generate diffraction simulated hyperbolas in the stacked section
  
-Programer: Rodolfo A. C. Neves (Dirack) 14/09/2019
+Programer: Rodolfo A. C. Neves (Dirack) 14/03/2020
 
 Email:  rodolfo_profissional@hotmail.com 
 
@@ -11,6 +11,7 @@ License: GPL-3.0 <https://www.gnu.org/licenses/gpl-3.0.txt>.
 #include <stdio.h>
 #include <stdlib.h>
 #include <rsf.h>
+#include <math.h>
 
 int main(int argc, char* argv[])
 {
@@ -27,6 +28,16 @@ int main(int argc, char* argv[])
 	float dm0; // m0 axis sampling
 	float om0; // m0 axis origin
 	bool verb; // verbose parameter
+	int im0; // center hyperbola index
+	int it0; // center hyperbola index
+	float m0; // center hyperbola m0 coordinate
+	float t0; // center hyperbola t0 coordinate
+	int ntraces; // aperture in number of traces
+	float m; // CMP coordinate of a hyperbola sample
+	float t; // time coordinate of a hyperbola sample
+	int it; // time index coordinate of a hyperbola sample
+	int i; // loop counter
+	int j; // loop counter
 
 	/* RSF files I/O */
 	sf_file in, out;
@@ -70,6 +81,29 @@ int main(int argc, char* argv[])
 
 	stackedSection = sf_floatalloc2(nt0,nm0);
 	sf_floatread(stackedSection[0],nt0*nm0,in);
+
+	/* Calculate center hyperbola coordinates */
+	im0 = round(pm0/dm0);
+	it0 = round(pt0/dt0);
+	m0 = im0*dm0+om0;
+	t0 = it0*dt0+ot0;
+	aperture = aperture;
+	ntraces = round(aperture/dm0);
+
+	for(i=im0-ntraces;i<im0+ntraces;i++){
+
+		m = (i*dm0)-m0;
+		t = sqrt(t0*t0 + ((m*m)/(v*v)));
+		it = (int) round(t/dt0);
+
+		for(j=-10;j<11;j++){
+			stackedSection[i][it+j] += 1;
+		}/* loop over a time window */
+
+		sf_warning("(t=%d,m=%d)\n",t,i);
+
+	} /* loop over diffraction hyperbola */
+
 	sf_floatwrite(stackedSection[0],nt0*nm0,out);
 
 }

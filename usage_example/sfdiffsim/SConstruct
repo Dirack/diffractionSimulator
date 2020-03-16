@@ -37,7 +37,7 @@ Plot("simulatedZeroOffset",
 
 Flow("test","simulatedZeroOffset",
 	'''
-	diffsim verb=y
+	diffsim verb=y pt0=1 pm0=5 aperture=2
 	''')
 
 End()
