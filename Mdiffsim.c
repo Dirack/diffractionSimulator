@@ -12,6 +12,7 @@ License: GPL-3.0 <https://www.gnu.org/licenses/gpl-3.0.txt>.
 #include <stdlib.h>
 #include <rsf.h>
 #include <math.h>
+#include "ricker.h"
 
 int main(int argc, char* argv[])
 {
@@ -42,6 +43,8 @@ int main(int argc, char* argv[])
 	int nv; // Number of diffraction hyperbolas velocities
 	int npt0; // Number of picked t0's
 	int npm0; // Number of picked m0's
+	float* ricker; // Generated ricker waveleti
+	float freq; // Max frequency of ricker wavelet
 
 	/* RSF files I/O */
 	sf_file in, out, v_file, pt0_file, pm0_file;
@@ -79,6 +82,9 @@ int main(int argc, char* argv[])
 	if(!sf_getfloat("aperture",&aperture)) aperture=1;
 	/* Diffraction hyperbolas aperture */
 
+	if (!sf_getfloat("freq",&freq)) freq=0.2/dt0;
+    	/* peak frequency for Ricker wavelet */
+
 	if(verb){
 		sf_warning("Active mode on!!!");
 		sf_warning("Input file parameters: ");
@@ -96,6 +102,11 @@ int main(int argc, char* argv[])
 	v = sf_floatalloc(nv);
 	sf_floatread(v,nv,v_file);
 
+	ricker = sf_floatalloc(20);
+    	ricker_init(nt0*2,freq*dt0,2);
+	ricker[11]=1;
+	sf_freqfilt(20,ricker);
+
 	aperture = aperture;
 	ntraces = round(aperture/dm0);
 
@@ -106,7 +117,7 @@ int main(int argc, char* argv[])
 		it0 = round(pt0[k]/dt0);
 		m0 = im0*dm0+om0;
 		t0 = it0*dt0+ot0;
-
+		
 		for(i=im0-ntraces;i<im0+ntraces;i++){
 
 			m = (i*dm0)-m0;
@@ -114,8 +125,8 @@ int main(int argc, char* argv[])
 			it = (int) round(t/dt0);
 
 			for(j=-10;j<11;j++){
-				stackedSection[i][it+j] += 1;
-			}/* loop over a time window */
+				stackedSection[i][it+j]+=ricker[j+10];
+			}/* Loop over a time window */
 
 		} /* loop over one diffraction hyperbola */
 
