@@ -1,0 +1,48 @@
+# coding: utf-8
+#
+# SConstruct (Madagascar script)
+# 
+# Purpose: Simulate and migrate diffraction hiperbolas 
+# in the stacked section with program sfdiffsim.
+# 
+# Site: http://www.dirackslounge.online
+# 
+# Version 1.0
+# 
+# Programer: Rodolfo Dirack 14/03/2020
+# 
+# Email: rodolfo_profissional@hotmail.com
+# 
+# License: GPL-3.0 <https://www.gnu.org/licenses/gpl-3.0.txt>.
+
+from rsf.proj import *
+import math
+
+# Generate a simulated zero offset section making a convolution of a line
+# of spikes with a ricker pulse
+Flow("spike",None,
+	"""
+	spike n1=1000 n2=1000 d1=0.004 d2=0.0125 o1=0 o2=0 k1=250 k2=0 l2=1000 mag=1 nsp=1
+	""")
+
+Flow("simulatedZeroOffset","spike",
+	"""
+	ricker1 frequency=10
+	""")
+	
+Plot("simulatedZeroOffset",
+	"""
+	grey title="Simulated zero offset section"
+	""")
+
+# Pick t0's and m0's to be the hyperbola center
+Flow('t0s',None,'spike n1=3 k1=1,2,3 nsp=3 mag=1,2,2.5')
+Flow('m0s',None,'spike n1=3 k1=1,2,3 nsp=3 mag=5,6,7')
+Flow('v',None,'spike n1=3 k1=1,2,3 nsp=3 mag=1.5,1.7,2')
+
+Flow("test",['simulatedZeroOffset','t0s','m0s','v'],
+	'''
+	diffsim verb=y pt0=1 pm0=5 aperture=2 t0=${SOURCES[1]} m0=${SOURCES[2]} v=${SOURCES[3]}
+	''')
+
+End()

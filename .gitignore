@@ -7,3 +7,5 @@ copy*
 Fig/
 *.jpeg
 *.pyc
+.sconsign
+sfdiffsim
