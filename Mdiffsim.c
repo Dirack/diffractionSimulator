@@ -134,8 +134,6 @@ int main(int argc, char* argv[])
 
 	} /* Loop over hyperbolas */
 
-	sf_floatwrite(ricker,nt0,w_file);
-
 	sf_floatwrite(stackedSection[0],nt0*nm0,out);
 
 }
