@@ -21,7 +21,7 @@ int main(int argc, char* argv[])
 	float* pt0; // picked t0's in the stacked section
 	float* v; // picked velocity for m0's and t0's
 	float** stackedSection; // stacked section A(t0,m0)
-	float aperture; // simulated hyperbolas aperture
+	float aperture; // simulated hyperbolas aperture (km)
 	int nt0; // number of t0's in stacked section
 	float dt0; // t0 axis sampling
 	float ot0; // t0 axis origin
@@ -80,7 +80,7 @@ int main(int argc, char* argv[])
 	/* 1: active mode; 0: quiet mode */
 
 	if(!sf_getfloat("aperture",&aperture)) aperture=1;
-	/* Diffraction hyperbolas aperture */
+	/* Diffraction hyperbolas aperture (Km) */
 
 	if (!sf_getfloat("freq",&freq)) freq=0.2/dt0;
     	/* peak frequency for Ricker wavelet */
