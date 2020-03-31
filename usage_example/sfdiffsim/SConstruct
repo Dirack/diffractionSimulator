@@ -40,9 +40,9 @@ Flow('t0s',None,'spike n1=3 k1=1,2,3 nsp=3 mag=1,2,2.5')
 Flow('m0s',None,'spike n1=3 k1=1,2,3 nsp=3 mag=5,6,7')
 Flow('v',None,'spike n1=3 k1=1,2,3 nsp=3 mag=1.5,1.7,2')
 
-Flow("test",['simulatedZeroOffset','t0s','m0s','v'],
+Flow("diffractionSimulatedSection",['simulatedZeroOffset','t0s','m0s','v'],
 	'''
-	diffsim verb=y pt0=1 pm0=5 aperture=2 t0=${SOURCES[1]} m0=${SOURCES[2]} v=${SOURCES[3]}
+	diffsim verb=y freq=10 aperture=2 t0=${SOURCES[1]} m0=${SOURCES[2]} v=${SOURCES[3]}
 	''')
 
 End()

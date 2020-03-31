@@ -45,6 +45,7 @@ int main(int argc, char* argv[])
 	int npm0; // Number of picked m0's
 	float* ricker; // Generated ricker waveleti
 	float freq; // Max frequency of ricker wavelet
+	int rickerCenter; // Center sample of the ricker wavelet (max amplitude)
 
 	/* RSF files I/O */
 	sf_file in, out, v_file, pt0_file, pm0_file;
@@ -83,7 +84,7 @@ int main(int argc, char* argv[])
 	/* Diffraction hyperbolas aperture (Km) */
 
 	if (!sf_getfloat("freq",&freq)) freq=0.2/dt0;
-    	/* peak frequency for Ricker wavelet */
+    	/* peak frequency for Ricker wavelet (Hz) */
 
 	if(verb){
 		sf_warning("Active mode on!!!");
@@ -102,12 +103,13 @@ int main(int argc, char* argv[])
 	v = sf_floatalloc(nv);
 	sf_floatread(v,nv,v_file);
 
-	ricker = sf_floatalloc(20);
+	/* Ricker wavelet trace */
+	ricker = sf_floatalloc(nt0);
     	ricker_init(nt0*2,freq*dt0,2);
-	ricker[11]=1;
-	sf_freqfilt(20,ricker);
+	rickerCenter = (int) (nt0/2);
+	ricker[rickerCenter] = 1;
+	sf_freqfilt(nt0,ricker);
 
-	aperture = aperture;
 	ntraces = round(aperture/dm0);
 
 	for(k=0;k<nv;k++){
@@ -125,12 +127,14 @@ int main(int argc, char* argv[])
 			it = (int) round(t/dt0);
 
 			for(j=-10;j<11;j++){
-				stackedSection[i][it+j]+=ricker[j+10];
+				stackedSection[i][j+it]+=ricker[j+rickerCenter];
 			}/* Loop over a time window */
 
 		} /* loop over one diffraction hyperbola */
 
 	} /* Loop over hyperbolas */
+
+	sf_floatwrite(ricker,nt0,w_file);
 
 	sf_floatwrite(stackedSection[0],nt0*nm0,out);
 
