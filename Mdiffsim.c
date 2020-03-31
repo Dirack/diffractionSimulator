@@ -12,6 +12,7 @@ License: GPL-3.0 <https://www.gnu.org/licenses/gpl-3.0.txt>.
 #include <stdlib.h>
 #include <rsf.h>
 #include <math.h>
+#include "ricker.h"
 
 int main(int argc, char* argv[])
 {
@@ -20,7 +21,7 @@ int main(int argc, char* argv[])
 	float* pt0; // picked t0's in the stacked section
 	float* v; // picked velocity for m0's and t0's
 	float** stackedSection; // stacked section A(t0,m0)
-	float aperture; // simulated hyperbolas aperture
+	float aperture; // simulated hyperbolas aperture (km)
 	int nt0; // number of t0's in stacked section
 	float dt0; // t0 axis sampling
 	float ot0; // t0 axis origin
@@ -42,6 +43,9 @@ int main(int argc, char* argv[])
 	int nv; // Number of diffraction hyperbolas velocities
 	int npt0; // Number of picked t0's
 	int npm0; // Number of picked m0's
+	float* ricker; // Generated ricker waveleti
+	float freq; // Max frequency of ricker wavelet
+	int rickerCenter; // Center sample of the ricker wavelet (max amplitude)
 
 	/* RSF files I/O */
 	sf_file in, out, v_file, pt0_file, pm0_file;
@@ -77,7 +81,10 @@ int main(int argc, char* argv[])
 	/* 1: active mode; 0: quiet mode */
 
 	if(!sf_getfloat("aperture",&aperture)) aperture=1;
-	/* Diffraction hyperbolas aperture */
+	/* Diffraction hyperbolas aperture (Km) */
+
+	if (!sf_getfloat("freq",&freq)) freq=0.2/dt0;
+    	/* peak frequency for Ricker wavelet (Hz) */
 
 	if(verb){
 		sf_warning("Active mode on!!!");
@@ -96,7 +103,13 @@ int main(int argc, char* argv[])
 	v = sf_floatalloc(nv);
 	sf_floatread(v,nv,v_file);
 
-	aperture = aperture;
+	/* Ricker wavelet trace */
+	ricker = sf_floatalloc(nt0);
+    	ricker_init(nt0*2,freq*dt0,2);
+	rickerCenter = (int) (nt0/2);
+	ricker[rickerCenter] = 1;
+	sf_freqfilt(nt0,ricker);
+
 	ntraces = round(aperture/dm0);
 
 	for(k=0;k<nv;k++){
@@ -106,7 +119,7 @@ int main(int argc, char* argv[])
 		it0 = round(pt0[k]/dt0);
 		m0 = im0*dm0+om0;
 		t0 = it0*dt0+ot0;
-
+		
 		for(i=im0-ntraces;i<im0+ntraces;i++){
 
 			m = (i*dm0)-m0;
@@ -114,8 +127,8 @@ int main(int argc, char* argv[])
 			it = (int) round(t/dt0);
 
 			for(j=-10;j<11;j++){
-				stackedSection[i][it+j] += 1;
-			}/* loop over a time window */
+				stackedSection[i][j+it]+=ricker[j+rickerCenter];
+			}/* Loop over a time window */
 
 		} /* loop over one diffraction hyperbola */
 
