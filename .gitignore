@@ -8,3 +8,7 @@ Fig/
 *.jpeg
 !images/*
 *.pyc
+.sconsign
+sfdiffsim
+ricker.h
+*.asc
