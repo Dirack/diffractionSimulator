@@ -9,3 +9,5 @@ Fig/
 *.pyc
 .sconsign
 sfdiffsim
+ricker.h
+*.asc

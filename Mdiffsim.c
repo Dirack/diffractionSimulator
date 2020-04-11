@@ -21,6 +21,7 @@ int main(int argc, char* argv[])
 	float* pt0; // picked t0's in the stacked section
 	float* v; // picked velocity for m0's and t0's
 	float** stackedSection; // stacked section A(t0,m0)
+	float** diffractionSection; // diffraction section A(t0,m0)
 	float aperture; // simulated hyperbolas aperture (km)
 	int nt0; // number of t0's in stacked section
 	float dt0; // t0 axis sampling
@@ -48,7 +49,7 @@ int main(int argc, char* argv[])
 	int rickerCenter; // Center sample of the ricker wavelet (max amplitude)
 
 	/* RSF files I/O */
-	sf_file in, out, v_file, pt0_file, pm0_file;
+	sf_file in, out, v_file, pt0_file, pm0_file, diff_file;
 
 	/* RSF files axis */
 
@@ -59,6 +60,7 @@ int main(int argc, char* argv[])
 	pm0_file = sf_input("m0");
 	v_file = sf_input("v");
 	out = sf_output("out");
+	diff_file = sf_output("diff");
 
 	/* Read stacked section geometry */
 	if(!sf_histint(in,"n1",&nt0)) sf_error("No n1= in input");
@@ -95,6 +97,7 @@ int main(int argc, char* argv[])
 
 	/* Read input files */
 	stackedSection = sf_floatalloc2(nt0,nm0);
+	diffractionSection = sf_floatalloc2(nt0,nm0);
 	sf_floatread(stackedSection[0],nt0*nm0,in);
 	pt0 = sf_floatalloc(npt0);
 	sf_floatread(pt0,npt0,pt0_file);
@@ -127,6 +130,7 @@ int main(int argc, char* argv[])
 			it = (int) round(t/dt0);
 
 			for(j=-10;j<11;j++){
+				diffractionSection[i][j+it]=ricker[j+rickerCenter];
 				stackedSection[i][j+it]+=ricker[j+rickerCenter];
 			}/* Loop over a time window */
 
@@ -135,5 +139,5 @@ int main(int argc, char* argv[])
 	} /* Loop over hyperbolas */
 
 	sf_floatwrite(stackedSection[0],nt0*nm0,out);
-
+	sf_floatwrite(diffractionSection[0],nt0*nm0,diff_file);
 }
