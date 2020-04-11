@@ -78,7 +78,7 @@ Result('mod1',
 Flow('dataCube','refs dips',
 	'''
 	kirmod_newton nt=1001 dt=0.004 freq=10
-	ns=401 ds=0.025 nh=161 dh=0.025 h0=0 s0=0 verb=y cmp=y
+	ns=201 ds=0.025 nh=161 dh=0.025 h0=0 s0=0 verb=y cmp=y
 	vstatus=0 velocity=%s debug=n fwdxini=y
 	xref=0 zref=0 dip=${SOURCES[1]} |
 	put d2=0.0125 label3="CMP" unit3="Km" label2="Offset" unit2="Km" label1=Time unit1=s
@@ -111,26 +111,26 @@ Flow('stack','nmo','stack')
 Result('stack','grey title="NMO Stack" ')
 
 # Pick t0's and m0's to be the diffraction hyperbola center
-Flow('t0s',None,'spike n1=3 k1=1,2,3 nsp=3 mag=1,2,2.5')
-Flow('m0s',None,'spike n1=3 k1=1,2,3 nsp=3 mag=5,6,7')
-Flow('v',None,'spike n1=3 k1=1,2,3 nsp=3 mag=1.5,1.7,2')
+Flow('t0s',None,'spike n1=4 k1=1,2,3,4 nsp=4 mag=0.6,0.65,0.7,0.7')
+Flow('m0s',None,'spike n1=4 k1=1,2,3,4 nsp=4 mag=1,1.5,1.75,2')
+Flow('v',None,'spike n1=4 k1=1,2,3,4 nsp=4 mag=1.508,1.508,1.508,1.508')
 
-Flow("diffractionSimulatedSection",['stack','t0s','m0s','v'],
+Flow(["reflectionDiffraction","diffractionSimulatedSection"],['stack','t0s','m0s','v'],
 	'''
-	diffsim verb=y freq=10 aperture=2 t0=${SOURCES[1]} m0=${SOURCES[2]} v=${SOURCES[3]}
+	diffsim diff=${TARGETS[1]} verb=y freq=10 aperture=0.5 t0=${SOURCES[1]} m0=${SOURCES[2]} v=${SOURCES[3]}
 	''')
 
 Result('diffractionSimulatedSection','grey title="Diffraction simulated section" ')
 
-# Migration recipe of the simulated diffractions
+## Migration recipe of the simulated diffractions
 diff("diff",
 	"diffractionSimulatedSection",
-	v0=1.5,
+	v0=1.4,
 	nv=200,
-	dv=0.1,
-	nx=1000,
+	dv=0.01,
+	nx=201, # Number of CMP's
 	padx=1000,
-	nt=1000,
+	nt=1001, # Sampling in time (n1)
 	tmin=0,
 	tmax=4,
             rect1=10,
