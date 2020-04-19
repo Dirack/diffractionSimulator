@@ -66,7 +66,7 @@ def diffmig(name,
         return grey(title)+ '''
         color=j scalebar=y bias=%g barlabel=Velocity barunit="%s/s"
         barreverse=y
-        ''' % (v0+0.5*nv*dv,units)
+        ''' % (v0,units)
 
     dip = name+'-dip' # dominant slope of stacked section
 
