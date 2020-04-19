@@ -111,14 +111,40 @@ Flow('stack','nmo','stack')
 Result('stack','grey title="NMO Stack" ')
 
 # Pick t0's and m0's to be the diffraction hyperbola center
-Flow('t0s',None,'spike n1=4 k1=1,2,3,4 nsp=4 mag=0.6,0.65,0.7,0.7')
-Flow('m0s',None,'spike n1=4 k1=1,2,3,4 nsp=4 mag=1,1.5,1.75,2')
-Flow('v',None,'spike n1=4 k1=1,2,3,4 nsp=4 mag=1.508,1.508,1.508,1.508')
+t0s=(0.6,0.65,0.7,0.65,0.6,0.5,0.36,0.26,2.1,2.15,2.12,2.15,2.1,2,1.86,1.76)
+m0s=(1,1.5,1.75,2,2.5,3,3.5,4,1,1.5,1.75,2,2.5,3,3.5,4)
+v=(1.508,1.508,1.508,1.508,1.508,1.508,1.508,1.508,1.6,1.6,1.6,1.6,1.6,1.6,1.6,1.6)
+
+Flow('t0s.asc',None,
+     '''
+     echo %s
+     n1=%d o1=0 d1=1
+     data_format=ascii_float in=$TARGET
+     ''' % (arr2str(t0s),len(t0s)))
+Flow('t0s','t0s.asc','dd form=native')
+
+Flow('m0s.asc',None,
+     '''
+     echo %s
+     n1=%d o1=0 d1=1
+     data_format=ascii_float in=$TARGET
+     ''' % (arr2str(m0s),len(m0s)))
+Flow('m0s','m0s.asc','dd form=native')
+
+Flow('v.asc',None,
+     '''
+     echo %s
+     n1=%d o1=0 d1=1
+     data_format=ascii_float in=$TARGET
+     ''' % (arr2str(v),len(v)))
+Flow('v','v.asc','dd form=native')
 
 Flow(["reflectionDiffraction","diffractionSimulatedSection"],['stack','t0s','m0s','v'],
 	'''
 	diffsim diff=${TARGETS[1]} verb=y freq=10 aperture=0.5 t0=${SOURCES[1]} m0=${SOURCES[2]} v=${SOURCES[3]}
 	''')
+
+Result('reflectionDiffraction','grey title="Diffraction simulated section" ')
 
 Result('diffractionSimulatedSection','grey title="Diffraction simulated section" ')
 
