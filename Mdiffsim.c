@@ -17,9 +17,9 @@ License: GPL-3.0 <https://www.gnu.org/licenses/gpl-3.0.txt>.
 int main(int argc, char* argv[])
 {
 
-	float** pm0; // picked m0's in the stacked section
-	float** pt0; // picked t0's in the stacked section
-	float* v; // picked velocity for m0's and t0's
+	float* pm0; // picked m0's in the stacked section
+	float* pt0; // picked t0's in the stacked section
+	float v; // velocity for hyperbolas in m0's and t0's
 	float** stackedSection; // stacked section A(t0,m0)
 	float** diffractionSection; // diffraction section A(t0,m0)
 	float aperture; // simulated hyperbolas aperture (km)
@@ -41,18 +41,14 @@ int main(int argc, char* argv[])
 	int i; // loop counter over a trace aperture to build one hyperbola
 	int j; // loop counter over a time window in a trace
 	int k; // loop counter number of hyperbolas for a given reflector
-	int r; // loop counter number of reflectors
-	int nv; // Number of diffraction hyperbolas velocities
 	int npt0; // Number of picked t0's
 	int npm0; // Number of picked m0's
-	int n2t0; // Number of reflectors in t0's file
-	int n2m0; // Number of reflectors in m0's file
 	float* ricker; // Generated ricker wavelet
 	float freq; // Max frequency of ricker wavelet
 	int rickerCenter; // Center sample of the ricker wavelet (max amplitude)
 
 	/* RSF files I/O */
-	sf_file in, out, v_file, pt0_file, pm0_file, diff_file;
+	sf_file in, out, pt0_file, pm0_file, diff_file;
 
 	/* RSF files axis */
 
@@ -61,7 +57,6 @@ int main(int argc, char* argv[])
 	in = sf_input("in");
 	pt0_file = sf_input("t0");
 	pm0_file = sf_input("m0");
-	v_file = sf_input("v");
 	out = sf_output("out");
 	diff_file = sf_output("diff");
 
@@ -76,14 +71,9 @@ int main(int argc, char* argv[])
 	/* Read auxiliary files geometry */
 	if(!sf_histint(pt0_file,"n1",&npt0)) sf_error("No n1= in t0's file");
 	if(!sf_histint(pm0_file,"n1",&npm0)) sf_error("No n1= in m0's file");
-	if(!sf_histint(v_file,"n1",&nv)) sf_error("No n1= in v's file");
-	if(!sf_histint(pt0_file,"n2",&n2t0)) sf_error("No n2= in t0's file");
-	if(!sf_histint(pm0_file,"n2",&n2m0)) sf_error("No n2= in m0's file");
 	
 	/* Vectors should have the same dimension */
 	if(!(npt0==npm0)) sf_error("Auxiliary files t0 and m0 should have the same n1!");
-	if(!(n2m0==nv)) sf_error("Auxiliary file m0 should have n2 (number of reflectors) equal to n1 in v file!");
-	if(!(n2t0==nv)) sf_error("Auxiliary file t0 should have n2 (number of reflectors) equal to n1 in v file!");
 	
 	if(!sf_getbool("verb",&verb)) verb=0;
 	/* 1: active mode; 0: quiet mode */
@@ -93,6 +83,9 @@ int main(int argc, char* argv[])
 
 	if (!sf_getfloat("freq",&freq)) freq=0.2/dt0;
     	/* peak frequency for Ricker wavelet (Hz) */
+
+	if(!sf_getfloat("v",&v)) sf_error("No v= hyperbolas velocity!");
+	/* Hyperbolas velocity (Km/s)*/
 
 	if(verb){
 		sf_warning("Active mode on!!!");
@@ -105,12 +98,10 @@ int main(int argc, char* argv[])
 	stackedSection = sf_floatalloc2(nt0,nm0);
 	diffractionSection = sf_floatalloc2(nt0,nm0);
 	sf_floatread(stackedSection[0],nt0*nm0,in);
-	pt0 = sf_floatalloc2(npt0,n2t0);
-	sf_floatread(pt0[0],npt0*n2t0,pt0_file);
-	pm0 = sf_floatalloc2(npm0,n2m0);
-	sf_floatread(pm0[0],npm0*n2m0,pm0_file);
-	v = sf_floatalloc(nv);
-	sf_floatread(v,nv,v_file);
+	pt0 = sf_floatalloc(npt0);
+	sf_floatread(pt0,npt0,pt0_file);
+	pm0 = sf_floatalloc(npm0);
+	sf_floatread(pm0,npm0,pm0_file);
 
 	/* Ricker wavelet trace */
 	ricker = sf_floatalloc(nt0);
@@ -121,32 +112,30 @@ int main(int argc, char* argv[])
 
 	ntraces = round(aperture/dm0);
 
-	for(r=0;r<n2t0;r++){
+	for(k=0;k<npt0;k++){
 
-		for(k=0;k<nv;k++){
-
-			/* Calculate center hyperbola coordinates */
-			im0 = round(pm0[r][k]/dm0);
-			it0 = round(pt0[r][k]/dt0);
-			m0 = im0*dm0+om0;
-			t0 = it0*dt0+ot0;
+		/* Calculate center hyperbola coordinates */
+		im0 = round(pm0[k]/dm0);
+		it0 = round(pt0[k]/dt0);
+		m0 = im0*dm0+om0;
+		t0 = it0*dt0+ot0;
+		//v = v/2;
 			
-			for(i=im0-ntraces;i<im0+ntraces;i++){
+		for(i=im0-ntraces;i<im0+ntraces;i++){
 
-				m = (i*dm0)-m0;
-				t = sqrt(t0*t0 + ((m*m)/(v[k]*v[k])));
-				it = (int) round(t/dt0);
+			m = (i*dm0)-m0;
+			t = sqrt(t0*t0 + ((m*m)/(v*v)));
+			it = (int) round(t/dt0);
 
-				for(j=-10;j<11;j++){
-					diffractionSection[i][j+it]=ricker[j+rickerCenter];
-					stackedSection[i][j+it]+=ricker[j+rickerCenter];
-				}/* Loop over a time window */
+			sf_warning("it=%i m=%f t=%f",it,m,t);
+			for(j=-10;j<11;j++){
+				diffractionSection[i][j+it]=ricker[j+rickerCenter];
+				stackedSection[i][j+it]+=ricker[j+rickerCenter];
+			}/* Loop over a time window */
 
-			} /* loop over one diffraction hyperbola */
+		} /* loop over one diffraction hyperbola */
 
-		} /* Loop over hyperbolas */
-
-	} /* Loop over reflectors */
+	} /* Loop over hyperbolas */
 
 	sf_floatwrite(stackedSection[0],nt0*nm0,out);
 	sf_floatwrite(diffractionSection[0],nt0*nm0,diff_file);
