@@ -122,7 +122,6 @@ int main(int argc, char* argv[])
 		it0 = round(pt0[k]/dt0);
 		m0 = im0*dm0+om0;
 		t0 = it0*dt0+ot0;
-		//v = v/2;
 			
 		for(i=im0-ntraces;i<im0+ntraces;i++){
 
