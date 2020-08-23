@@ -109,7 +109,7 @@ int main(int argc, char* argv[])
 	/* Ricker wavelet trace */
 	ricker = sf_floatalloc(nt0);
     	ricker_init(nt0*2,freq*dt0,2);
-	rickerCenter = (int) (nt0/2);
+	rickerCenter = (int) round(nt0/2);
 	ricker[rickerCenter] = 1;
 	sf_freqfilt(nt0,ricker);
 
