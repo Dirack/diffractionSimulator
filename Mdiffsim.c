@@ -107,7 +107,7 @@ int main(int argc, char* argv[])
 	ricker = sf_floatalloc(nt0);
     	ricker_init(nt0*2,freq*dt0,2);
 	rickerCenter = (int) round(nt0/2);
-	ricker[rickerCenter] = 1;
+	ricker[rickerCenter] = 0.5;
 	sf_freqfilt(nt0,ricker);
 
 	ntraces = round(aperture/dm0);
@@ -125,7 +125,7 @@ int main(int argc, char* argv[])
 			/* Jump to next iteration if its outside of the section */
 			if(it >= nt0 || i >= nm0 || i < 0) continue;
 
-			for(j=-10;j<11;j++){
+			for(j=-20;j<21;j++){
 				diffractionSection[i][j+it]=ricker[j+rickerCenter];
 				stackedSection[i][j+it]+=ricker[j+rickerCenter];
 			}/* Loop over a time window */
