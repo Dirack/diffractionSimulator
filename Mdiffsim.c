@@ -122,7 +122,9 @@ int main(int argc, char* argv[])
 			t = sqrt((pt0[k]*pt0[k]) + ((m*m)/(v*v)));
 			it = (int) round(t/dt0);
 
-			sf_warning("it=%i m=%f t=%f",it,m,t);
+			/* Jump to next iteration if its outside of the section */
+			if(it >= nt0 || i >= nm0 || i < 0) continue;
+
 			for(j=-10;j<11;j++){
 				diffractionSection[i][j+it]=ricker[j+rickerCenter];
 				stackedSection[i][j+it]+=ricker[j+rickerCenter];
