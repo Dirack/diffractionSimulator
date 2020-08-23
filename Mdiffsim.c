@@ -31,9 +31,6 @@ int main(int argc, char* argv[])
 	float om0; // m0 axis origin
 	bool verb; // verbose parameter
 	int im0; // center hyperbola index
-	int it0; // center hyperbola index
-	float m0; // center hyperbola m0 coordinate
-	float t0; // center hyperbola t0 coordinate
 	int ntraces; // aperture in number of traces
 	float m; // CMP coordinate of a hyperbola sample
 	float t; // time coordinate of a hyperbola sample
@@ -119,14 +116,10 @@ int main(int argc, char* argv[])
 
 		/* Calculate center hyperbola coordinates */
 		im0 = round(pm0[k]/dm0);
-		it0 = round(pt0[k]/dt0);
-		m0 = im0*dm0+om0;
-		t0 = it0*dt0+ot0;
-			
+	
 		for(i=im0-ntraces;i<im0+ntraces;i++){
-
-			m = (i*dm0)-m0;
-			t = sqrt(t0*t0 + ((m*m)/(v*v)));
+			m = (i*dm0)-pm0[k];
+			t = sqrt((pt0[k]*pt0[k]) + ((m*m)/(v*v)));
 			it = (int) round(t/dt0);
 
 			sf_warning("it=%i m=%f t=%f",it,m,t);
