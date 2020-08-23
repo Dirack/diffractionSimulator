@@ -19,7 +19,7 @@ int main(int argc, char* argv[])
 
 	float* pm0; // picked m0's in the stacked section
 	float* pt0; // picked t0's in the stacked section
-	float* v; // picked velocity for m0's and t0's
+	float v; // velocity for hyperbolas in m0's and t0's
 	float** stackedSection; // stacked section A(t0,m0)
 	float** diffractionSection; // diffraction section A(t0,m0)
 	float aperture; // simulated hyperbolas aperture (km)
@@ -31,25 +31,21 @@ int main(int argc, char* argv[])
 	float om0; // m0 axis origin
 	bool verb; // verbose parameter
 	int im0; // center hyperbola index
-	int it0; // center hyperbola index
-	float m0; // center hyperbola m0 coordinate
-	float t0; // center hyperbola t0 coordinate
 	int ntraces; // aperture in number of traces
 	float m; // CMP coordinate of a hyperbola sample
 	float t; // time coordinate of a hyperbola sample
 	int it; // time index coordinate of a hyperbola sample
-	int i; // loop counter
-	int j; // loop counter
-	int k; // loop counter
-	int nv; // Number of diffraction hyperbolas velocities
+	int i; // loop counter over a trace aperture to build one hyperbola
+	int j; // loop counter over a time window in a trace
+	int k; // loop counter number of hyperbolas for a given reflector
 	int npt0; // Number of picked t0's
 	int npm0; // Number of picked m0's
-	float* ricker; // Generated ricker waveleti
+	float* ricker; // Generated ricker wavelet
 	float freq; // Max frequency of ricker wavelet
 	int rickerCenter; // Center sample of the ricker wavelet (max amplitude)
 
 	/* RSF files I/O */
-	sf_file in, out, v_file, pt0_file, pm0_file, diff_file;
+	sf_file in, out, pt0_file, pm0_file, diff_file;
 
 	/* RSF files axis */
 
@@ -58,7 +54,6 @@ int main(int argc, char* argv[])
 	in = sf_input("in");
 	pt0_file = sf_input("t0");
 	pm0_file = sf_input("m0");
-	v_file = sf_input("v");
 	out = sf_output("out");
 	diff_file = sf_output("diff");
 
@@ -73,11 +68,9 @@ int main(int argc, char* argv[])
 	/* Read auxiliary files geometry */
 	if(!sf_histint(pt0_file,"n1",&npt0)) sf_error("No n1= in t0's file");
 	if(!sf_histint(pm0_file,"n1",&npm0)) sf_error("No n1= in m0's file");
-	if(!sf_histint(v_file,"n1",&nv)) sf_error("No n1= in v's file");
 	
 	/* Vectors should have the same dimension */
-	if(!(npt0==npm0)) sf_error("Auxiliary files (t0,m0 and v) should have the same n1!");
-	if(!(npm0==nv)) sf_error("Auxiliary files (t0,m0 and v) should have the same n1!");
+	if(!(npt0==npm0)) sf_error("Auxiliary files t0 and m0 should have the same n1!");
 	
 	if(!sf_getbool("verb",&verb)) verb=0;
 	/* 1: active mode; 0: quiet mode */
@@ -87,6 +80,12 @@ int main(int argc, char* argv[])
 
 	if (!sf_getfloat("freq",&freq)) freq=0.2/dt0;
     	/* peak frequency for Ricker wavelet (Hz) */
+
+	if(!sf_getfloat("v",&v)) sf_error("No v= hyperbolas velocity!");
+	/* Hyperbolas velocity (Km/s)*/
+	
+	/* half medium velocity for diffraction */
+	v=v/2;
 
 	if(verb){
 		sf_warning("Active mode on!!!");
@@ -103,33 +102,30 @@ int main(int argc, char* argv[])
 	sf_floatread(pt0,npt0,pt0_file);
 	pm0 = sf_floatalloc(npm0);
 	sf_floatread(pm0,npm0,pm0_file);
-	v = sf_floatalloc(nv);
-	sf_floatread(v,nv,v_file);
 
 	/* Ricker wavelet trace */
 	ricker = sf_floatalloc(nt0);
     	ricker_init(nt0*2,freq*dt0,2);
-	rickerCenter = (int) (nt0/2);
-	ricker[rickerCenter] = 1;
+	rickerCenter = (int) round(nt0/2);
+	ricker[rickerCenter] = 0.5;
 	sf_freqfilt(nt0,ricker);
 
 	ntraces = round(aperture/dm0);
 
-	for(k=0;k<nv;k++){
+	for(k=0;k<npt0;k++){
 
 		/* Calculate center hyperbola coordinates */
 		im0 = round(pm0[k]/dm0);
-		it0 = round(pt0[k]/dt0);
-		m0 = im0*dm0+om0;
-		t0 = it0*dt0+ot0;
-		
+	
 		for(i=im0-ntraces;i<im0+ntraces;i++){
-
-			m = (i*dm0)-m0;
-			t = sqrt(t0*t0 + ((m*m)/(v[k]*v[k])));
+			m = (i*dm0)-pm0[k];
+			t = sqrt((pt0[k]*pt0[k]) + ((m*m)/(v*v)));
 			it = (int) round(t/dt0);
 
-			for(j=-10;j<11;j++){
+			/* Jump to next iteration if its outside of the section */
+			if(it >= nt0 || i >= nm0 || i < 0) continue;
+
+			for(j=-20;j<21;j++){
 				diffractionSection[i][j+it]=ricker[j+rickerCenter];
 				stackedSection[i][j+it]+=ricker[j+rickerCenter];
 			}/* Loop over a time window */
