@@ -86,6 +86,9 @@ int main(int argc, char* argv[])
 
 	if(!sf_getfloat("v",&v)) sf_error("No v= hyperbolas velocity!");
 	/* Hyperbolas velocity (Km/s)*/
+	
+	/* half medium velocity for diffraction */
+	v=v/2;
 
 	if(verb){
 		sf_warning("Active mode on!!!");
