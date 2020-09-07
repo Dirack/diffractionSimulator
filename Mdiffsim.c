@@ -126,7 +126,7 @@ int main(int argc, char* argv[])
 			if(it >= nt0 || i >= nm0 || i < 0) continue;
 
 			for(j=-20;j<21;j++){
-				diffractionSection[i][j+it]=ricker[j+rickerCenter];
+				diffractionSection[i][j+it]+=ricker[j+rickerCenter];
 				stackedSection[i][j+it]+=ricker[j+rickerCenter];
 			}/* Loop over a time window */
 
