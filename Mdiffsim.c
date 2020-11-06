@@ -119,16 +119,16 @@ int main(int argc, char* argv[])
 	for(k=0;k<npt0;k++){
 
 		/* Calculate center hyperbola coordinates */
-		im0 = round(pm0[k]/dm0);
+		im0 = round((pm0[k]-om0)/dm0);
 
 		#ifdef LOGGING_LOOP_HYPERBOLA
 		sf_warning("im0=%d ntraces=%d",im0,ntraces);
 		#endif
 	
 		for(i=im0-ntraces;i<im0+ntraces;i++){
-			m = (i*dm0)-pm0[k];
+			m = (i*dm0)-pm0[k]+(om0);
 			t = sqrt((pt0[k]*pt0[k]) + ((m*m)/(v*v)));
-			it = (int) round(t/dt0);
+			it = (int) round((t-ot0)/dt0);
 
 			#ifdef LOGGING_LOOP_TRACES
 			sf_warning("m=%f t=%f it=%d nt0=%d nm0=%d i=%d",m,t,it,nt0,nm0,i);
