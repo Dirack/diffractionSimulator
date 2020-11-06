@@ -8,6 +8,10 @@ License: GPL-3.0 <https://www.gnu.org/licenses/gpl-3.0.txt>.
 
 */
 
+/* uncomment to show debug logging during for loops */
+//#define LOGGING_LOOP_HYPERBOLA
+//#define LOGGING_LOOP_TRACES
+//#define LOGGING_LOOP_TIME_WINDOW
 #include <stdio.h>
 #include <stdlib.h>
 #include <rsf.h>
@@ -116,11 +120,19 @@ int main(int argc, char* argv[])
 
 		/* Calculate center hyperbola coordinates */
 		im0 = round(pm0[k]/dm0);
+
+		#ifdef LOGGING_LOOP_HYPERBOLA
+		sf_warning("im0=%d ntraces=%d",im0,ntraces);
+		#endif
 	
 		for(i=im0-ntraces;i<im0+ntraces;i++){
 			m = (i*dm0)-pm0[k];
 			t = sqrt((pt0[k]*pt0[k]) + ((m*m)/(v*v)));
 			it = (int) round(t/dt0);
+
+			#ifdef LOGGING_LOOP_TRACES
+			sf_warning("m=%f t=%f it=%d nt0=%d nm0=%d i=%d",m,t,it,nt0,nm0,i);
+			#endif
 
 			/* Jump to next iteration if its outside of the section */
 			if(it >= nt0 || i >= nm0 || i < 0) continue;
@@ -128,6 +140,13 @@ int main(int argc, char* argv[])
 			for(j=-20;j<21;j++){
 				diffractionSection[i][j+it]=ricker[j+rickerCenter];
 				stackedSection[i][j+it]+=ricker[j+rickerCenter];
+				#ifdef LOGGING_LOOP_TIME_WINDOW
+				sf_warning("stacked=%f i=%d j=%d ricker=%f\n",
+						stackedSection[i][j+it],
+						i,
+						j+it,
+						ricker[j+rickerCenter]);
+				#endif
 			}/* Loop over a time window */
 
 		} /* loop over one diffraction hyperbola */
