@@ -17,6 +17,7 @@ License: GPL-3.0 <https://www.gnu.org/licenses/gpl-3.0.txt>.
 #include <rsf.h>
 #include <math.h>
 #include "ricker.h"
+#define N_SAMPLES_RICKER 1000
 
 int main(int argc, char* argv[])
 {
@@ -108,11 +109,11 @@ int main(int argc, char* argv[])
 	sf_floatread(pm0,npm0,pm0_file);
 
 	/* Ricker wavelet trace */
-	ricker = sf_floatalloc(nt0);
-    	ricker_init(nt0*2,freq*dt0,2);
-	rickerCenter = (int) round(nt0/2);
+	ricker = sf_floatalloc(N_SAMPLES_RICKER);
+    	ricker_init(N_SAMPLES_RICKER*2,freq*dt0,2);
+	rickerCenter = (int) round(N_SAMPLES_RICKER/2);
 	ricker[rickerCenter] = 0.5;
-	sf_freqfilt(nt0,ricker);
+	sf_freqfilt(N_SAMPLES_RICKER,ricker);
 
 	ntraces = round(aperture/dm0);
 
@@ -138,8 +139,8 @@ int main(int argc, char* argv[])
 			if(it >= nt0 || i >= nm0 || i < 0) continue;
 
 			for(j=-20;j<21;j++){
-				diffractionSection[i][j+it]=ricker[j+rickerCenter];
-				stackedSection[i][j+it]+=ricker[j+rickerCenter];
+				diffractionSection[i][j+it]+=ricker[j+rickerCenter];
+				stackedSection[i][j+it]=ricker[j+rickerCenter];
 				#ifdef LOGGING_LOOP_TIME_WINDOW
 				sf_warning("stacked=%f i=%d j=%d ricker=%f\n",
 						stackedSection[i][j+it],
